@@ -1,15 +1,17 @@
 {
-  "name": "trees",
-  "version": "1.0.0",
-  "description": "",
-  "main": "sketch.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "canvas-sketch": "^0.7.6"
-  }
+    "name": "trees",
+    "version": "1.0.0",
+    "description": "",
+    "main": "sketch.js",
+    "scripts": {
+        "start": "npx canvas-sketch-cli sketch.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "canvas-sketch": "^0.7.6",
+        "dat.gui": "^0.7.9",
+        "lodash.debounce": "^4.0.8"
+    }
 }

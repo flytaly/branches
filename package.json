@@ -4,7 +4,7 @@
     "description": "",
     "main": "sketch.js",
     "scripts": {
-        "start": "npx canvas-sketch-cli sketch.js"
+        "start:static": "npx canvas-sketch-cli static/sketch.js"
     },
     "keywords": [],
     "author": "",

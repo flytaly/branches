@@ -6,15 +6,6 @@ export function randomBetween(low, high) {
     return Math.random() * (high - low) + low;
 }
 
-function calcNextAngles(angle) {
-    let angleMax = angle + Math.PI / 4;
-    let angleMin = angle - Math.PI / 4;
-    let angleDiff = randomBetween(0, angleMax - angleMin - Math.PI / 16);
-    let angle1 = angleMax - angleDiff / 2;
-    let angle2 = angleMin + angleDiff / 2;
-    return { angle1, angle2 };
-}
-
 export class Tree {
     /**
      * @arg {Object} props
@@ -25,11 +16,13 @@ export class Tree {
      * */
     constructor({ context, params, onParamsChange, withGui } = {}) {
         this.params = {
-            finalLength: 10,
+            finalLength: 6,
             minLenReduction: 0.7,
             maxLenReduction: 0.9,
             minWeightReduction: 0.6,
             maxWeightReduction: 0.8,
+            deltaMin: Math.PI / 4,
+            deltaMax: Math.PI / 4,
             color: '#1e1e1e',
             drawWithLines: false,
             ...(params ? params : {}),
@@ -62,7 +55,7 @@ export class Tree {
     /** @arg {[number, number]} trunkStart */
     drawTree(trunkStart) {
         this.params.count = 0;
-        let trunkEnd = [trunkStart[0], trunkStart[1] - 50];
+        let trunkEnd = [trunkStart[0], trunkStart[1] - 30];
         let length = randomBetween(90, 120);
         let weight = randomBetween(20, 35);
         this.context.lineWidth = weight;
@@ -88,7 +81,7 @@ export class Tree {
         this.branchTrapezoid(baseStart, middlePoint, weight, length, Math.PI / 2);
     }
 
-    /** Draw branch as isosceles trapezoid to prevent "steps" beetween lines with different widths */
+    /** Draw branch as trapezoid to prevent "steps" beetween branches with different widths */
     branchTrapezoid(baseBottom, middlePoint, weight, length, angle) {
         this.count++;
         if (this.count > MAX_BRANCHES) {
@@ -121,7 +114,7 @@ export class Tree {
         this.context.fill();
         this.context.closePath();
 
-        const { angle1, angle2 } = calcNextAngles(angle);
+        const { angle1, angle2 } = this.calcNextAngles(angle);
 
         let newWeight = randomBetween(weight * this.params.minWeightReduction, weight * this.params.maxWeightReduction);
         let newLength = randomBetween(length * this.params.minLenReduction, length * this.params.maxLenReduction);
@@ -149,7 +142,7 @@ export class Tree {
         this.context.lineWidth = weight;
         this.line(startPoint[0], startPoint[1], endpoint[0], endpoint[1]);
 
-        const { angle1, angle2 } = calcNextAngles(angle);
+        const { angle1, angle2 } = this.calcNextAngles(angle);
 
         let newWeight = randomBetween(weight * this.params.minWeightReduction, weight * this.params.maxWeightReduction);
         let newLength = randomBetween(length * this.params.minLenReduction, length * this.params.maxLenReduction);
@@ -160,5 +153,14 @@ export class Tree {
 
         this.branchLine(endpoint, newWeight, newLength, angle1);
         this.branchLine(endpoint, newWeight, newLength, angle2);
+    }
+
+    calcNextAngles(angle) {
+        let angleMax = angle + this.params.deltaMax;
+        let angleMin = angle - this.params.deltaMin;
+        let angleDiff = randomBetween(0, angleMax - angleMin - Math.PI / 16);
+        let angle1 = angleMax - angleDiff / 2;
+        let angle2 = angleMin + angleDiff / 2;
+        return { angle1, angle2 };
     }
 }

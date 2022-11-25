@@ -3,16 +3,10 @@
  * https://justinpoliachik.com/posts/2021-09-13-generativetrees01/ */
 
 import canvasSketch from 'canvas-sketch';
-import debounce from 'lodash.debounce';
 import { Tree } from './tree';
 
 // dcanvas-sketch manager
 let manager;
-
-const renderDebounced = debounce(async () => {
-    if (!manager) return;
-    (await manager).render();
-}, 300);
 
 const settings = {
     dimensions: [1024, 1024],
@@ -27,8 +21,11 @@ const settings = {
  */
 const sketch = ({ context }) => {
     const tree = new Tree({
-        onParamsChange: renderDebounced,
+        onParamsChange: async () => {
+            (await manager).render();
+        },
         context: context,
+        withGui: true,
     });
 
     return ({ context, width, height }) => {

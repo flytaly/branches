@@ -7,7 +7,8 @@ let manager;
 const settings = {
     dimensions: [1024, 1024],
     animate: true,
-    fps: 60, // Optionally specify an export frame rate, defaults to 30
+    fps: 24,
+    playbackRate: 'throttle',
 };
 
 /**
@@ -28,8 +29,10 @@ const sketch = ({ context, width, height }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
 
-    return ({ context, pause }) => {
-        const drawn = tree.draw();
+    return () => {
+        if (!tree.drawNext()) {
+            console.log('finished');
+        }
     };
 };
 

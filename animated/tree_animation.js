@@ -1,13 +1,5 @@
 import * as dat from 'dat.gui';
 
-const MAX_BRANCHES = 500_000;
-
-let maxArrayLength = 0;
-
-export function randomBetween(low, high) {
-    return Math.random() * (high - low) + low;
-}
-
 /** @typedef {{x1:number, y1:number, x2:number, y2:number, xMid:number, yMid:number}} BaseCoords */
 
 /**
@@ -17,6 +9,28 @@ export function randomBetween(low, high) {
  * @property {number} BranchSplit.width
  * @property {number} BranchSplit.angle
  */
+
+export function randomBetween(low, high) {
+    return Math.random() * (high - low) + low;
+}
+
+export class LinkedNode {
+    /**
+     *  @arg {Object} props
+     *  @arg {LinkedNode} props.next
+     *  @arg {LinkedNode} props.prev
+     *  @arg {BranchSplit} props.data
+     * */
+    constructor({ prev = null, next = null, data } = {}) {
+        this.next = next;
+        this.data = data;
+        if (!prev) return;
+        if (!next) {
+            this.next = prev.next;
+        }
+        prev.next = this;
+    }
+}
 
 export class Tree {
     /**
@@ -29,7 +43,7 @@ export class Tree {
      * */
     constructor({ context, params, onParamsChange, withGui, startPoint } = {}) {
         this.params = {
-            finalLength: 10,
+            finalLength: 5,
             minLenReduction: 0.7,
             maxLenReduction: 0.9,
             minWeightReduction: 0.6,
@@ -46,8 +60,10 @@ export class Tree {
             this.initDatGui();
         }
 
-        /** @type {BranchSplit[]} splits */
-        this.splits = [];
+        /** @type LinkedNode  */
+        this.first = null;
+        /** @type LinkedNode  */
+        this.last = null;
         this.setStartPoint(startPoint);
     }
 
@@ -61,7 +77,7 @@ export class Tree {
             x2: startPoint[0] + width / 2,
             y2: startPoint[1],
         };
-        this.splits.push({
+        const node = {
             // Trunk
             angle: Math.PI / 2,
             length: randomBetween(90, 120),
@@ -71,7 +87,9 @@ export class Tree {
                 yMid: base.y1 + (base.y2 - base.y1) / 2,
                 ...base,
             },
-        });
+        };
+        this.first = new LinkedNode({ data: node });
+        this.last = this.first;
     }
 
     line(x0, y0, x1, y1) {
@@ -91,13 +109,18 @@ export class Tree {
         this.gui.addColor(this.params, 'color').onFinishChange(this.onParamsChange);
     }
 
-    draw() {
-        if (!this.splits.length) {
-            return false;
-        }
-        const split = this.splits.shift();
+    drawNext() {
+        let drawnLength = 0;
+        while (drawnLength < 100) {
+            if (!this.first) {
+                return false;
+            }
 
-        this.branch(split);
+            const split = this.first.data;
+            drawnLength += split.length;
+            this.branch(split);
+            this.first = this.first.next;
+        }
         return true;
     }
 
@@ -122,8 +145,20 @@ export class Tree {
         if (length < this.params.finalLength) {
             return;
         }
-        this.splits.push({ length, width, coords, angle: angle1 });
-        this.splits.push({ length, width, coords, angle: angle2 });
+
+        const split1 = { length, width, coords, angle: angle1 };
+        const split2 = { length, width, coords, angle: angle2 };
+
+        if (Math.random() > 0.7) {
+            const n1 = new LinkedNode({ data: split1, prev: this.last });
+            this.last = new LinkedNode({ data: split2, prev: n1 });
+        } else {
+            const n1 = new LinkedNode({ data: split1, prev: this.first });
+            const n2 = new LinkedNode({ data: split2, prev: n1 });
+            if (this.first == this.last) {
+                this.last = n2;
+            }
+        }
     }
 
     /**

@@ -16,12 +16,8 @@ const settings = {
  * @param {CanvasRenderingContext2D} opts.context
  */
 const sketch = ({ context, width, height }) => {
-    const tree = new Tree({
-        onParamsChange: async () => {
-            (await manager).render();
-        },
+    let tree = new Tree({
         context: context,
-        withGui: false,
         params: {},
         startPoint: [width / 2, height],
     });
@@ -31,6 +27,11 @@ const sketch = ({ context, width, height }) => {
 
     return () => {
         if (!tree.drawNext()) {
+            /* tree = new Tree({ */
+            /*     context: context, */
+            /*     params: {}, */
+            /*     startPoint: [width / 2 + Math.random() * 300 - 150, height], */
+            /* }); */
             console.log('finished');
         }
     };

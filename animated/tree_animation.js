@@ -14,6 +14,10 @@ export function randomBetween(low, high) {
     return Math.random() * (high - low) + low;
 }
 
+function lerp(a, b, t) {
+    return a + (b - a) * t;
+}
+
 export class LinkedNode {
     /**
      *  @arg {Object} props
@@ -43,7 +47,7 @@ export class Tree {
      * */
     constructor({ context, params, onParamsChange, withGui, startPoint } = {}) {
         this.params = {
-            finalLength: 5,
+            finalLength: 7,
             minLenReduction: 0.7,
             maxLenReduction: 0.9,
             minWeightReduction: 0.6,
@@ -56,6 +60,7 @@ export class Tree {
         this.onParamsChange = onParamsChange;
         this.count = 0;
         this.context = context;
+        this.hsl = [0, 0, 80];
         if (withGui) {
             this.initDatGui();
         }
@@ -111,7 +116,7 @@ export class Tree {
 
     drawNext() {
         let drawnLength = 0;
-        while (drawnLength < 100) {
+        while (drawnLength < 350) {
             if (!this.first) {
                 return false;
             }
@@ -127,8 +132,10 @@ export class Tree {
     /** @arg {BranchSplit} split */
     branch(split) {
         this.context.lineWidth = split.width;
-        this.context.fillStyle = this.params.color;
-        this.context.strokeStyle = this.params.color;
+
+        const lightness = lerp(this.hsl[2], 0, split.length / 80);
+        this.context.fillStyle = `hsl(${this.hsl[0]}, ${this.hsl[1]}%, ${lightness}%)`;
+
         const coords = this.trapezoid(split);
 
         const { angle1, angle2 } = this.calcNextAngles(split.angle);

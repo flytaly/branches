@@ -22,16 +22,17 @@ const sketch = ({
   width,
   height
 }) => {
+  const bgColor = '#F7FBFF';
   let tree = new _tree_animation.Tree({
     context: context,
     params: {
-      colorRoot: 'white',
-      colorHSLTo: [217, 31, 100],
-      colorHSLFrom: [0, 0, 0]
+      colorRoot: bgColor,
+      colorHSLTo: [217, 31, 80],
+      colorHSLFrom: [217, 31, 20]
     },
     startPoint: [width / 2, height - 40]
   });
-  context.fillStyle = 'white';
+  context.fillStyle = bgColor;
   context.fillRect(0, 0, width, height);
   return () => {
     if (!tree.drawNext()) {

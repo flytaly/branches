@@ -8,9 +8,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 let manager;
 const settings = {
   dimensions: [1024, 1024],
-  animate: true,
-  fps: 24,
-  playbackRate: 'throttle'
+  animate: true
+  /* fps: 30, */
+  /* playbackRate: 'throttle', */
 };
 
 /**
@@ -130,7 +130,6 @@ class Tree {
       ...(params ? params : {})
     };
     this.onParamsChange = onParamsChange;
-    this.count = 0;
     this.context = context;
     if (withGui) {
       this.initDatGui();
@@ -145,7 +144,6 @@ class Tree {
 
   /** @arg {[number, number]} startPoint */
   setStartPoint(startPoint) {
-    this.params.count = 0;
     let width = randomBetween(20, 35);
     const base = {
       x1: startPoint[0] - width / 2,
@@ -187,7 +185,7 @@ class Tree {
   }
   drawNext() {
     let drawnLength = 0;
-    while (drawnLength < 350) {
+    while (drawnLength < 100) {
       if (!this.first) {
         return false;
       }

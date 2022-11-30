@@ -7,8 +7,8 @@ let manager;
 const settings = {
     dimensions: [1024, 1024],
     animate: true,
-    fps: 24,
-    playbackRate: 'throttle',
+    /* fps: 30, */
+    /* playbackRate: 'throttle', */
 };
 
 /**

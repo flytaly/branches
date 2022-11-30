@@ -8,6 +8,7 @@ import * as dat from 'dat.gui';
  * @property {number} BranchSplit.length
  * @property {number} BranchSplit.width
  * @property {number} BranchSplit.angle
+ * @property {string} BranchSplit.color
  */
 
 export function randomBetween(low, high) {
@@ -16,6 +17,10 @@ export function randomBetween(low, high) {
 
 function lerp(a, b, t) {
     return a + (b - a) * t;
+}
+
+function clamp(a, b, t) {
+    return Math.max(a, Math.min(b, t));
 }
 
 export class LinkedNode {
@@ -54,13 +59,14 @@ export class Tree {
             maxWeightReduction: 0.8,
             deltaMin: Math.PI / 4,
             deltaMax: Math.PI / 4,
-            color: '#1e1e1e',
+            colorRoot: '#ffffff',
+            colorHSLTo: [0, 0, 100],
+            colorHSLFrom: [0, 0, 0],
             ...(params ? params : {}),
         };
         this.onParamsChange = onParamsChange;
         this.count = 0;
         this.context = context;
-        this.hsl = [0, 0, 80];
         if (withGui) {
             this.initDatGui();
         }
@@ -82,6 +88,7 @@ export class Tree {
             x2: startPoint[0] + width / 2,
             y2: startPoint[1],
         };
+        /** @type BranchSplit */
         const node = {
             // Trunk
             angle: Math.PI / 2,
@@ -92,6 +99,7 @@ export class Tree {
                 yMid: base.y1 + (base.y2 - base.y1) / 2,
                 ...base,
             },
+            color: this.params.colorRoot,
         };
         this.first = new LinkedNode({ data: node });
         this.last = this.first;
@@ -111,7 +119,6 @@ export class Tree {
         this.gui.add(this.params, 'maxLenReduction', 0.3, 0.95).onFinishChange(this.onParamsChange);
         this.gui.add(this.params, 'minWeightReduction', 0.2, 1.0).onFinishChange(this.onParamsChange);
         this.gui.add(this.params, 'drawWithLines').onFinishChange(this.onParamsChange);
-        this.gui.addColor(this.params, 'color').onFinishChange(this.onParamsChange);
     }
 
     drawNext() {
@@ -133,10 +140,17 @@ export class Tree {
     branch(split) {
         this.context.lineWidth = split.width;
 
-        const lightness = lerp(this.hsl[2], 0, split.length / 80);
-        this.context.fillStyle = `hsl(${this.hsl[0]}, ${this.hsl[1]}%, ${lightness}%)`;
+        // interpolate lightness
+        const hsl = this.params.colorHSLTo;
+        const lightness = lerp(hsl[2], this.params.colorHSLFrom[2], split.length / 100);
+        const color = `hsl(${hsl[0]}, ${hsl[1]}%, ${lightness}%)`;
 
-        const coords = this.trapezoid(split);
+        const gradientStops = [
+            { offset: 0, color: split.color },
+            { offset: 1, color: color },
+        ];
+
+        const coords = this.drawSegment(split, gradientStops);
 
         const { angle1, angle2 } = this.calcNextAngles(split.angle);
 
@@ -153,8 +167,8 @@ export class Tree {
             return;
         }
 
-        const split1 = { length, width, coords, angle: angle1 };
-        const split2 = { length, width, coords, angle: angle2 };
+        const split1 = { length, width, coords, color, angle: angle1 };
+        const split2 = { length, width, coords, color, angle: angle2 };
 
         if (Math.random() > 0.7) {
             const n1 = new LinkedNode({ data: split1, prev: this.last });
@@ -170,9 +184,13 @@ export class Tree {
 
     /**
      * @arg {BranchSplit} split
+     * @arg {{offset:number, color:string}[]} gradientStops
      * @returns {BaseCoords} coords
      * */
-    trapezoid({ coords, width, length, angle }) {
+    drawSegment({ coords, width, length, angle }, gradientStops) {
+        // ====================================
+        // ===== Calculate position coordinates
+
         // find mid point of trapezoid top base
         const middleEnd = {
             xMid: coords.xMid + length * Math.cos(angle),
@@ -190,6 +208,24 @@ export class Tree {
             x2: middleEnd.xMid + half * c,
             y2: middleEnd.yMid + half * s,
         };
+
+        // ====================================
+        // ===== Set Gradient
+        if (gradientStops) {
+            const gradient = this.context.createLinearGradient(
+                coords.xMid, //
+                coords.yMid,
+                middleEnd.xMid,
+                middleEnd.yMid,
+            );
+            gradientStops.forEach(({ color, offset }) => {
+                gradient.addColorStop(offset, color);
+            });
+            this.context.fillStyle = gradient;
+        }
+
+        // ====================================
+        // ===== Draw
         this.context.beginPath();
         this.context.moveTo(coords.x1, coords.y1);
         this.context.lineTo(baseTop.x1, baseTop.y1);

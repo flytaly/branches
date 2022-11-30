@@ -18,8 +18,12 @@ const settings = {
 const sketch = ({ context, width, height }) => {
     let tree = new Tree({
         context: context,
-        params: {},
-        startPoint: [width / 2, height],
+        params: {
+            colorRoot: 'white',
+            colorHSLTo: [217, 31, 100],
+            colorHSLFrom: [0, 0, 0],
+        },
+        startPoint: [width / 2, height - 40],
     });
 
     context.fillStyle = 'white';

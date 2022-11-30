@@ -20,6 +20,7 @@ const sketch = ({ context, width, height }) => {
     let tree = new Tree({
         context: context,
         params: {
+            finalLength: 6,
             colorRoot: bgColor,
             colorHSLTo: [217, 31, 80],
             colorHSLFrom: [217, 31, 20],

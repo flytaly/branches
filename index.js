@@ -26,6 +26,7 @@ const sketch = ({
   let tree = new _tree_animation.Tree({
     context: context,
     params: {
+      finalLength: 6,
       colorRoot: bgColor,
       colorHSLTo: [217, 31, 80],
       colorHSLFrom: [217, 31, 20]
